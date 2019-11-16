@@ -1,26 +1,49 @@
-Entity = {
-    __id = "Entity",
-    __number = 1,
-    Component = {},
-    GetComponent = function (self, id)
-        return self.Component[id]
-    end,
-    DestroyComponent = function (self, id)
-        self.Component[id] = nil
-    end,
-    UpdateEvent = function () end,
-    Update = function (self)
-        self:UpdateEvent()
-        for k, v in pairs(self.Component) do
-            v:Update(self)
-        end
+-- Entity
+
+Entity = Class()
+
+function Entity:Init(name, em, ctor)
+    self.Component = {}
+    self.EventManager = em
+    self.EventManager.Entity = self
+    self.Name = name
+    local f = ctor or function () end
+    f(self)
+end
+
+function Entity:AddComponent(...)
+    for k, component in pairs({...}) do
+        self.Component[component.__id] = Class(component)
     end
-}
-function Entity:New(t, i)
-    local a = setmetatable(t or {}, self)
-    self.__index = self
-    if i then
-        i(a)
+    return self:GetComponent(...)
+end
+
+function Entity:GetComponent(...)
+    local t = {}
+    for k, v in pairs({...}) do
+        table.insert(t, self.Component[v])
     end
-    return a
+    return unpack(t)
+end
+
+function Entity:RemoveComponent(name)
+    self.Component[name] = nil
+end
+
+function Entity:OnUpdate()
+    
+end
+
+function Entity:Draw()
+    
+end
+
+function Entity:Update()
+    self:OnUpdate()
+    for _, component in pairs(self.Component) do
+        component:Update()
+        component:Draw()
+    end
+    self.EventManager:Update(self)
+    self:Draw()
 end
