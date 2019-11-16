@@ -1,23 +1,46 @@
-System = function ()
-    return {
-        Entity = {},
-        Add = function (self, entity, number)
-            self.Entity[entity.__id] = self.Entity[entity.__id] or {}
-            self.Entity[entity.__id][number or entity.__number] = entity
-        end,
-        Destroy = function (self, enid, num)
-            if type(enid) == "string" then
-                self.Entity[enid][num] = nil
-            else
-                self.Entity[enid.__id][enid.__number] = nil
+-- System
+
+System = Class()
+
+function System:Init(name)
+    self.Entity = {}
+    self.Name = name
+end
+
+function System:AddEntity(entity)
+    table.insert(self.Entity, entity)
+end
+
+function System:RemoveEntity(name, id)
+    for k, v in pairs(self.Entity) do
+        if v.Name == name then
+            if id and v.__id ~= id then
+                break
             end
-        end,
-        Update = function (self)
-            for k, v in pairs(self.Entity) do
-                for _, V in pairs(v) do
-                    V:Update()
+        end
+        table.remove(self.Entity, k)
+    end
+end
+
+function System:GetEntity(name, id)
+    local t
+    for k, v in pairs(self.Entity) do
+        if v.Name == name then
+            t = v
+            if id then
+                if id == v.__id then
+                    t = v
+                else
+                    t = nil
                 end
             end
         end
-    }
+    end
+    return t
+end
+
+function System:Update()
+    for k, v in ipairs(self.Entity) do
+        v:Update()
+    end
 end
